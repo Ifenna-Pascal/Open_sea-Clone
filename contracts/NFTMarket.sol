@@ -49,7 +49,7 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     /// @notice set listing price
-    function setListPrice (uint _price) public returns (uint {
+    function setListPrice (uint _price) public returns (uint) {
         if(msg.sender == address(this)) {
             listingPrice = _price;
         }
@@ -105,7 +105,7 @@ contract NFTMarket is ReentrancyGuard {
         MarketItem[] memory items = new MarketItem[](unsoldItemCount);  
         // loop through items that ever existed
         for (uint i = 0; i<itemCount; i++) {
-            if(idMarketItem[i+1]).owner == address(0) {
+            if(idMarketItem[i+1].owner == address(0)) {
                 uint currentId = idMarketItem[i+1].itemId;
                 MarketItem storage currentItem = idMarketItem[currentId];
                 items[currentIndex] = currentItem;
@@ -116,17 +116,17 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     /// @notice fetch list of NFTs owned by a loggedin user
-    function fetchMyNFTs() public view returns (MarketIem[] memory) {
+    function fetchMyNFTs() public view returns (MarketItem[] memory) {
         uint totalItemCount = _itemIds.current();
         uint itemCount = 0;
         uint currentIndex = 0;
+        MarketItem[] memory items = new MarketItem[](itemCount);
 
         for (uint i=0; i<=totalItemCount; i++) {
             //get only items bought by the logged in user
             if (idMarketItem[i+1].owner == msg.sender) {
                 itemCount++;
             }
-            MarketItem[] memory items = new MarketItem[](itemCount);
             for (uint i=0; i<totalItemCount; i++){
                 if (idMarketItem[i+1].owner == msg.sender) {
                     uint currentId = idMarketItem[i+1].itemId;
@@ -140,17 +140,16 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     /// @notice fetch list of NFTs created by a loggedin user
-    function fetchItemsCreated() public view returns (MarketIem[] memory) {
+    function fetchItemsCreated() public view returns (MarketItem[] memory) {
         uint totalItemCount = _itemIds.current();
         uint itemCount = 0;
         uint currentIndex = 0;
-
+           MarketItem[] memory items = new MarketItem[](itemCount);
         for (uint i=0; i<=totalItemCount; i++) {
             //get only items bought by the logged in user
             if (idMarketItem[i+1].seller == msg.sender) {
                 itemCount++;
             }
-            MarketItem[] memory items = new MarketItem[](itemCount);
             for (uint i=0; i<totalItemCount; i++){
                 if (idMarketItem[i+1].owner == msg.sender) {
                     uint currentId = idMarketItem[i+1].itemId;
