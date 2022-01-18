@@ -70,8 +70,19 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     /// @notice function to create a market sale
-    function createMarketSale (address nftContract) public payable nonReentrant {
+    function createMarketSale (address nftContract, uint itemId) public payable nonReentrant {
+        uint price = idMarketItem[itemId].price;
+        uint tokenId = idMarketItem[itemId].tokenId;
+        require(msg.value == price, "Please submit the required price to complete purchase");
+        idMarketItem[itemId].seller.transfer(msg.value);
+
+        // transfer ownership from the contract to the buyer
+         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
         
+        idMarketItem[itemId].owner = payable(msg.sender); // marks buyer as new seller
+        idMarketItem[itemId].sold = true; // marks that the nft has been sold
+        _itemsSold.increment(); //increment the total number of items sold on the platform
+        payable(owner).transfer(listingPrice); // pay owner of the contract the actual listing price
     }
 }
  
