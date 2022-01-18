@@ -48,6 +48,15 @@ contract NFTMarket is ReentrancyGuard {
         return listingPrice;
     }
 
+    /// @notice set listing price
+    function setListPrice (uint _price) public returns (uint {
+        if(msg.sender == address(this)) {
+            listingPrice = _price;
+        }
+        return listingPrice;
+    } 
+
+
     /// @notice function to create new market item
     function createMarketItem (address nftContract, uint tokenId, uint256 price ) public payable nonReentrant {
         require(price > 0, "Price must be above zero");
@@ -78,11 +87,84 @@ contract NFTMarket is ReentrancyGuard {
 
         // transfer ownership from the contract to the buyer
          IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-        
+
+        // update the storage data of the markert place 
         idMarketItem[itemId].owner = payable(msg.sender); // marks buyer as new seller
         idMarketItem[itemId].sold = true; // marks that the nft has been sold
         _itemsSold.increment(); //increment the total number of items sold on the platform
         payable(owner).transfer(listingPrice); // pay owner of the contract the actual listing price
     }
+
+    /// @notice total number of items unsold on our platform
+    function  fetchMarketItems() public view returns (MarketItem[] memory) {
+        // total number of items created
+        uint itemCount = _itemIds.current();
+        // total number of items not soldr
+        uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
+        uint currentIndex = 0;
+        MarketItem[] memory items = new MarketItem[](unsoldItemCount);  
+        // loop through items that ever existed
+        for (uint i = 0; i<itemCount; i++) {
+            if(idMarketItem[i+1]).owner == address(0) {
+                uint currentId = idMarketItem[i+1].itemId;
+                MarketItem storage currentItem = idMarketItem[currentId];
+                items[currentIndex] = currentItem;
+                currentIndex += 1;
+            }
+        }
+        return items; //return array of unsold items
+    }
+
+    /// @notice fetch list of NFTs owned by a loggedin user
+    function fetchMyNFTs() public view returns (MarketIem[] memory) {
+        uint totalItemCount = _itemIds.current();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+
+        for (uint i=0; i<=totalItemCount; i++) {
+            //get only items bought by the logged in user
+            if (idMarketItem[i+1].owner == msg.sender) {
+                itemCount++;
+            }
+            MarketItem[] memory items = new MarketItem[](itemCount);
+            for (uint i=0; i<totalItemCount; i++){
+                if (idMarketItem[i+1].owner == msg.sender) {
+                    uint currentId = idMarketItem[i+1].itemId;
+                    MarketItem storage currentItem = idMarketItem[currentId];
+                    items[currentIndex] = currentItem;
+                    currentIndex +=1;
+                }
+            }
+        }
+        return items;
+    }
+
+    /// @notice fetch list of NFTs created by a loggedin user
+    function fetchItemsCreated() public view returns (MarketIem[] memory) {
+        uint totalItemCount = _itemIds.current();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+
+        for (uint i=0; i<=totalItemCount; i++) {
+            //get only items bought by the logged in user
+            if (idMarketItem[i+1].seller == msg.sender) {
+                itemCount++;
+            }
+            MarketItem[] memory items = new MarketItem[](itemCount);
+            for (uint i=0; i<totalItemCount; i++){
+                if (idMarketItem[i+1].owner == msg.sender) {
+                    uint currentId = idMarketItem[i+1].itemId;
+                    MarketItem storage currentItem = idMarketItem[currentId];
+                    items[currentIndex] = currentItem;
+                    currentIndex +=1;
+                }
+            }
+        }
+        return items;
+    }
 }
+
+// other functions
+// total amount made by user selling NFT;
+// total amount used in buying NFT by as user
  
